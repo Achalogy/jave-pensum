@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { ICareer } from "src/models/career"
 import { ISubject } from "src/models/subjects"
-import { IType } from "src/types"
+import { IType, TranslateType } from "src/types"
 
 export default () => {
   const dragItem: any = useRef()
@@ -53,6 +53,16 @@ export default () => {
   useEffect(() => {
     getSubjects()
   }, [])
+
+  // useEffect(() => {
+  //   let newList = subjects.slice()
+  //   console.log(newList)
+  //   newList = newList.map(semester => semester.map((x: ISubject) => ({
+  //     ...x, canBeAdded: x.requirements?.subjects?.every(z => subjects.slice(0, -1).flat().map(y => y.code))
+  //   }))).sort((a: any, b: any) => a.canBeAdded === b.canBeAdded ? 0 : a.canBeAdded? 1 : -1)
+
+  //   setSubjects(newList)
+  // }, [subjects.slice(0, -1)])
 
   const dragStart = (position: any) => {
     dragItem.current = position;
@@ -108,7 +118,8 @@ export default () => {
     const canBeAdded = requirements?.every(x => subjects.slice(0, -1).flat().map(y => y.code).includes(x))
 
     return <DragableDiv id="item" index={index} className={`flex flex-col items-center justify-center p-2 rounded-md text-center text-xs h-full flex-1 ${subject.type == "elective" ? "bg-green-300" : subject.type == "complementary" ? "bg-blue-300" : subject.type == "emphasis" ? "bg-purple-400" : subject.type == "subject" ? "bg-orange-300" : subject.type == "basics_elective" ? "bg-yellow-300" : "bg-slate-200"} ${canBeAdded ? "saturate-100" : "saturate-0"}`}>
-      <b>{subject.name ?? subject.type}</b>
+      { /* @ts-expect-error */ }
+      <b>{subject.name ?? TranslateType[subject.type as any]}</b>
       <p>{subject.code}</p>
       <p>{subject.credits}</p>
     </DragableDiv>
@@ -128,7 +139,7 @@ export default () => {
           <DragableDiv id="column" index={[grupoindex, grupo.length]} className={`flex flex-col flex-1 p-2 gap-2 overflow-scroll rounded-md ${grupoindex % 2 == 0 ? "bg-slate-200" : "bg-slate-100"}`}>
             {grupo.map((subject, subjectIndex) => <SubjectComponent index={[grupoindex, subjectIndex]} subject={subject} />)}
           </DragableDiv>
-          <p className={`text-center ${credits < 10 ? "bg-green-300" : credits < 14 ? "bg-indigo-300" : credits < 18 ? "bg-blue-300": credits < 20 ? "bg-orange-300" : "bg-red-300" } rounded-md font-semibold py-1`}>
+          <p className={`text-center ${credits < 10 ? "bg-green-300" : credits < 14 ? "bg-indigo-300" : credits < 18 ? "bg-blue-300" : credits < 20 ? "bg-orange-300" : "bg-red-300"} rounded-md font-semibold py-1`}>
             Creditos {credits}
           </p>
         </div>
