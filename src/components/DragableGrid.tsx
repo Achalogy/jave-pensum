@@ -125,7 +125,7 @@ export default () => {
         <></>
         :
         <DragableDiv id="item" index={index} className={`flex items-center justify-center rounded-md text-center text-xs h-full overflow-hidden xl:max-h-[8vh] ${colors[subject.core ?? ""] ?? colors[subject.type ?? ""]} ${canBeAdded ? "saturate-100" : "saturate-0"}`}>
-          <p className="bg-indigo-300 h-full text-center flex items-center px-2 font-semibold">{">"} {reqSemester >= 0 ? reqSemester + 1 : 0}</p>
+          {canBeAdded && <p className="bg-indigo-300 h-full text-center flex items-center px-2 font-semibold">{">"} {(reqSemester >= 0 ? reqSemester + 1 : 0)}</p>}
           <div className="flex flex-col items-center justify-center p-2 flex-1">
             { /* @ts-expect-error */}
             <b>{subject.name ?? TranslateType[subject.type as any]}</b>
