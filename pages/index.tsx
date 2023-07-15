@@ -16,7 +16,7 @@ export default () => {
 
   return (
     <div className="flex flex-col xl:flex-row gap-2 h-screen">
-      <div className="flex flex-col gap-2 flex-1 bg-slate-100 p-4">
+      <div className="flex flex-col gap-2 flex-1 bg-slate-100 p-2 xl:p-4">
         <h1 className="font-semibold text-xl">Carreras</h1>
         <div className="flex flex-col gap-2">
           {careers.map(career => {
@@ -33,7 +33,7 @@ export default () => {
           </div>
         </div>
       </div>
-      <div className="flex flex-[4] p-4">
+      <div className="flex flex-[4] p2 xl:p-4">
         <DragableGrid />
       </div>
     </div>

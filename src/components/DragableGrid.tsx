@@ -7,6 +7,9 @@ export default () => {
   const dragItem: any = useRef()
   const dragOverItem: any = useRef()
 
+  const [showVault, setShowVault] = useState<boolean>(true)
+  const [hideCannotBeAdded, setHideCannotBeAdded] = useState<boolean>(false)
+
   const [semesters, setSemesters] = useState(8)
 
   const [subjects, setSubjects] = useState<any[][]>(() => {
@@ -115,18 +118,37 @@ export default () => {
 
     const requirements = subject.requirements?.subjects ?? []
 
-    const canBeAdded = requirements?.every(x => subjects.slice(0, -1).flat().map(y => y.code).includes(x))
+    let ocurrencies: number[] = []
 
-    return <DragableDiv id="item" index={index} className={`flex flex-col items-center justify-center p-2 rounded-md text-center text-xs h-full flex-1 ${subject.type == "elective" ? "bg-green-300" : subject.type == "complementary" ? "bg-blue-300" : subject.type == "emphasis" ? "bg-purple-400" : subject.type == "subject" ? "bg-orange-300" : subject.type == "basics_elective" ? "bg-yellow-300" : "bg-slate-200"} ${canBeAdded ? "saturate-100" : "saturate-0"}`}>
-      { /* @ts-expect-error */ }
-      <b>{subject.name ?? TranslateType[subject.type as any]}</b>
-      <p>{subject.code}</p>
-      <p>{subject.credits}</p>
-    </DragableDiv>
+    // const canBeAdded = requirements?.every(x => subjectsDone.includes(x))
+    const canBeAdded = requirements?.every((x) => {
+      return subjects.slice(0, -1).some((y, i) => {
+        ocurrencies.push(i)
+        return y.map(x => x.code).includes(x)
+      })
+    })
+
+    const reqSemester = Math.max(...ocurrencies)
+
+    return <>
+      {hideCannotBeAdded && !canBeAdded ?
+        <></>
+        :
+        <DragableDiv id="item" index={index} className={`flex items-center justify-center rounded-md text-center text-xs h-full overflow-hidden xl:max-h-[8vh] ${subject.type == "elective" ? "bg-green-300" : subject.type == "complementary" ? "bg-blue-300" : subject.type == "emphasis" ? "bg-purple-400" : subject.type == "subject" ? "bg-orange-300" : subject.type == "basics_elective" ? "bg-yellow-300" : "bg-slate-200"} ${canBeAdded ? "saturate-100" : "saturate-0"}`}>
+          <p className="bg-indigo-300 h-full text-center flex items-center px-2 font-semibold">{">"} {reqSemester >= 0 ? reqSemester + 1 : 0}</p>
+          <div className="flex flex-col items-center justify-center p-2 flex-1">
+            { /* @ts-expect-error */}
+            <b>{subject.name ?? TranslateType[subject.type as any]}</b>
+            <p>{subject.code}</p>
+            <p>{subject.credits}</p>
+          </div>
+        </DragableDiv>
+      }
+    </>
   }
 
   return <div className="flex flex-col flex-1 max-w-full max-h-[100vh]">
-    <div className="flex gap-1 p-2 h-[75%] overflow-x-scroll">
+    <div className="flex gap-1 p-2 flex-1 overflow-x-scroll">
       {subjects.slice(0, -1).map((grupo, grupoindex) => {
         const credits = grupo.reduce((acc, curr) => {
           return acc + (isNaN(curr.credits) ? 0 : curr.credits)
@@ -136,7 +158,7 @@ export default () => {
           <p className="text-center bg-indigo-200 rounded-md font-semibold py-1">
             Semestre {grupoindex + 1}
           </p>
-          <DragableDiv id="column" index={[grupoindex, grupo.length]} className={`flex flex-col flex-1 p-2 gap-2 overflow-scroll rounded-md ${grupoindex % 2 == 0 ? "bg-slate-200" : "bg-slate-100"}`}>
+          <DragableDiv id="column" index={[grupoindex, grupo.length]} className={`flex flex-col flex-1 p-2 gap-2 overflow-scroll rounded-md w-[45vw] xl:w-auto ${grupoindex % 2 == 0 ? "bg-slate-200" : "bg-slate-100"}`}>
             {grupo.map((subject, subjectIndex) => <SubjectComponent index={[grupoindex, subjectIndex]} subject={subject} />)}
           </DragableDiv>
           <p className={`text-center ${credits < 10 ? "bg-green-300" : credits < 14 ? "bg-indigo-300" : credits < 18 ? "bg-blue-300" : credits < 20 ? "bg-orange-300" : "bg-red-300"} rounded-md font-semibold py-1`}>
@@ -145,10 +167,16 @@ export default () => {
         </div>
       })}
     </div>
-    <div className="flex flex-wrap gap-2 p-4 h-[25%] bg-white overflow-scroll">
-      {subjects.at(-1)?.map((subject, subjectIndex) => <div>
-        <SubjectComponent index={[subjects.length - 1, subjectIndex]} subject={subject} />
-      </div>)}
+    <div className="flex flex-col max-h-[25%] bg-white items-end">
+      <div className="flex gap-2">
+        <button onClick={() => setShowVault(prev => !prev)} className="px-2 bg-slate-200 rounded-md">{showVault ? "Ocultar" : "Mostrar"}</button>
+        <button onClick={() => setHideCannotBeAdded(prev => !prev)} className="px-2 bg-slate-200 rounded-md">{hideCannotBeAdded ? "Mostrar si no se puede añadir" : "Ocultar si no se puede añadir"}</button>
+      </div>
+      {showVault && <div className="flex flex-wrap p-4 gap-2 overflow-scroll">
+        {subjects.at(-1)?.map((subject, subjectIndex) =>
+          <SubjectComponent index={[subjects.length - 1, subjectIndex]} subject={subject} />
+        )}
+      </div>}
     </div>
   </div>
 }
