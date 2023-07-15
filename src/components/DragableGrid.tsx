@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import colors from "src/constants/colors"
 import { ICareer } from "src/models/career"
 import { ISubject } from "src/models/subjects"
 import { IType, TranslateType } from "src/types"
@@ -57,16 +58,6 @@ export default () => {
     getSubjects()
   }, [])
 
-  // useEffect(() => {
-  //   let newList = subjects.slice()
-  //   console.log(newList)
-  //   newList = newList.map(semester => semester.map((x: ISubject) => ({
-  //     ...x, canBeAdded: x.requirements?.subjects?.every(z => subjects.slice(0, -1).flat().map(y => y.code))
-  //   }))).sort((a: any, b: any) => a.canBeAdded === b.canBeAdded ? 0 : a.canBeAdded? 1 : -1)
-
-  //   setSubjects(newList)
-  // }, [subjects.slice(0, -1)])
-
   const dragStart = (position: any) => {
     dragItem.current = position;
   };
@@ -120,7 +111,6 @@ export default () => {
 
     let ocurrencies: number[] = []
 
-    // const canBeAdded = requirements?.every(x => subjectsDone.includes(x))
     const canBeAdded = requirements?.every((x) => {
       return subjects.slice(0, -1).some((y, i) => {
         ocurrencies.push(i)
@@ -134,12 +124,12 @@ export default () => {
       {hideCannotBeAdded && !canBeAdded ?
         <></>
         :
-        <DragableDiv id="item" index={index} className={`flex items-center justify-center rounded-md text-center text-xs h-full overflow-hidden xl:max-h-[8vh] ${subject.type == "elective" ? "bg-green-300" : subject.type == "complementary" ? "bg-blue-300" : subject.type == "emphasis" ? "bg-purple-400" : subject.type == "subject" ? "bg-orange-300" : subject.type == "basics_elective" ? "bg-yellow-300" : "bg-slate-200"} ${canBeAdded ? "saturate-100" : "saturate-0"}`}>
+        <DragableDiv id="item" index={index} className={`flex items-center justify-center rounded-md text-center text-xs h-full overflow-hidden xl:max-h-[8vh] ${colors[subject.core ?? ""] ?? colors[subject.type ?? ""]} ${canBeAdded ? "saturate-100" : "saturate-0"}`}>
           <p className="bg-indigo-300 h-full text-center flex items-center px-2 font-semibold">{">"} {reqSemester >= 0 ? reqSemester + 1 : 0}</p>
           <div className="flex flex-col items-center justify-center p-2 flex-1">
             { /* @ts-expect-error */}
             <b>{subject.name ?? TranslateType[subject.type as any]}</b>
-            <p>{subject.code}</p>
+            <p>{subject.core}</p>
             <p>{subject.credits}</p>
           </div>
         </DragableDiv>
