@@ -129,7 +129,7 @@ export default () => {
           <div className="flex flex-col items-center justify-center p-2 flex-1">
             { /* @ts-expect-error */}
             <b>{subject.name ?? TranslateType[subject.type as any]}</b>
-            <p>{subject.core}</p>
+            <p>{subject.code}</p>
             <p>{subject.credits}</p>
           </div>
         </DragableDiv>
