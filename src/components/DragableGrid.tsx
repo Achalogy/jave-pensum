@@ -6,7 +6,7 @@ import getCanBeAdded from "src/utils/getCanBeAdded"
 import getCreditsColor from "src/utils/getCreditsColor"
 import translateTypes from "src/utils/translateType"
 
-export default () => {
+export default ({ careerId }: { careerId: string }) => {
   const dragItem = useRef()
   const dragOverItem = useRef()
 
@@ -25,7 +25,7 @@ export default () => {
 
   const getSubjects = async () => {
 
-    const response: ICareer = await (await fetch('/api/getCareer?career=64aeb9010820de8718449067')).json()
+    const response: ICareer = await (await fetch(`/api/getCareer?career=${careerId}`)).json()
 
     const _subjectsData: ISubject[] = await (await fetch('/api/getSubjects', {
       method: "POST",
@@ -115,9 +115,9 @@ export default () => {
       {hideCannotBeAdded && !canBeAdded ?
         <></>
         :
-        <DragableDiv id="item" index={index} className={`flex items-center justify-center rounded-md text-center text-xs h-full overflow-hidden xl:max-h-[8vh] ${colors[subject.core ?? ""] ?? colors[subject.type ?? ""]} ${canBeAdded ? "saturate-100" : "saturate-0"}`}>
-          {canBeAdded && <p className="bg-indigo-300 h-full text-center flex items-center px-2 font-semibold">{">"} {(reqSemester >= 0 ? reqSemester + 1 : 0)}</p>}
-          <div className="flex flex-col items-center justify-center p-2 flex-1">
+        <DragableDiv id="item" index={index} className={`flex flex-col xl:flex-row items-center justify-center rounded-md text-center text-xs overflow-hidden landscape:min-h-[25vh] xl:max-h-[8vh] xl:!min-h-[8vh] ${colors[subject.core ?? ""] ?? colors[subject.type ?? ""]} ${canBeAdded ? "saturate-100" : "saturate-0"}`}>
+          {canBeAdded && <p className="bg-indigo-300 w-full xl:w-auto xl:h-full text-center flex items-center font-semibold justify-center text-xs">{">"} {(reqSemester >= 0 ? reqSemester + 1 : 0)}</p>}
+          <div className="flex flex-col items-center justify-center p-1 xl:p-2 flex-1">
             <b>{subject.name ?? translateTypes[subject.type ?? ""]}</b>
             <p>{subject.code}</p>
             <p>{subject.credits}</p>
@@ -135,20 +135,20 @@ export default () => {
         }, 0)
 
         return <div className="flex flex-col flex-1 gap-2">
-          <p className="text-center bg-indigo-200 rounded-md font-semibold py-1">
+          <p className="text-center bg-indigo-200 rounded-md font-semibold py-1 text-xs xl:text-base">
             Semestre {semesterIndex + 1}
           </p>
-          <DragableDiv id="column" index={[semesterIndex, semester.length]} className={`flex flex-col flex-1 p-2 gap-2 overflow-scroll rounded-md w-[45vw] xl:w-auto ${semesterIndex % 2 == 0 ? "bg-slate-200" : "bg-slate-100"}`}>
+          <DragableDiv id="column" index={[semesterIndex, semester.length]} className={`flex flex-col flex-1 p-2 gap-2 overflow-scroll rounded-md portrait:w-[45vw] w-auto ${semesterIndex % 2 == 0 ? "bg-slate-200" : "bg-slate-100"}`}>
             {semester.map((subject, subjectIndex) => <SubjectComponent index={[semesterIndex, subjectIndex]} subject={subject} />)}
           </DragableDiv>
-          <p className={`text-center ${getCreditsColor({ credits })} rounded-md font-semibold py-1`}>
+          <p className={`text-center ${getCreditsColor({ credits })} rounded-md font-semibold py-1 text-xs xl:text-base`}>
             Creditos {credits}
           </p>
         </div>
       })}
     </div>
     <div className="flex flex-col max-h-[25%] bg-white items-end">
-      <div className="flex gap-2">
+      <div className="flex gap-2 text-xs xl:text-base">
         <button onClick={() => setShowVault(prev => !prev)} className="px-2 bg-slate-200 rounded-md">{showVault ? "Ocultar" : "Mostrar"}</button>
         <button onClick={() => setHideCannotBeAdded(prev => !prev)} className="px-2 bg-slate-200 rounded-md">{hideCannotBeAdded ? "Mostrar si no se puede añadir" : "Ocultar si no se puede añadir"}</button>
       </div>

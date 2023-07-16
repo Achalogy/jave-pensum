@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react"
 import DragableGrid from "src/components/DragableGrid"
-import { ICareer } from "src/models/career"
+import { ICareerDetails } from "src/interfaces"
+import { BiCheck, BiChevronDown, BiChevronRight } from 'react-icons/bi'
 
 export default () => {
-  const [careers, setCareers] = useState<{ _id: string, name: string, updated: string }[]>([])
+  const [careers, setCareers] = useState<ICareerDetails[]>([])
+  const [selectedCareerId, setSelectedCareerId] = useState<string>()
+  const [showCareerSelector, setShowCareerSelector] = useState<boolean>(true)
 
   const getCareers = async () => {
-    const response = await (await fetch('/api/getCareers')).json()
+    const response: ICareerDetails[] = await (await fetch('/api/getCareers')).json()
     if (response.length > 0) setCareers(response)
+    if (!selectedCareerId) setSelectedCareerId(response[0]._id ?? null)
   }
 
   useEffect(() => {
@@ -15,26 +19,38 @@ export default () => {
   }, [])
 
   return (
-    <div className="flex flex-col xl:flex-row gap-2 h-screen">
-      <div className="flex flex-col gap-2 flex-1 bg-slate-100 p-2 xl:p-4">
-        <h1 className="font-semibold text-xl">Carreras</h1>
-        <div className="flex flex-col gap-2">
-          {careers.map(career => {
-
-            return <div className="flex flex-col gap-2 p-4 rounded-md bg-white cursor-pointer">
-              <h3 className="font-semibold">{career.name}</h3>
-              <p className="text-xs text-end text-slate-400">Actualizado: {new Date(career.updated).toLocaleDateString("es-CO")}</p>
-            </div>
-          })
-          }
-          <div className="flex flex-col gap-2 text-center text-slate-700 bg-red-200 bg-opacity-50 py-2 rounded-md">
-            <b>PROYECTO EN CONTRUCCIÓN</b>
-            <p>Por favor usar computador por ahora, y reportarme cualquier cosita :D</p>
+    <div className="flex flex-col">
+      <p className="p-2 bg-orange-100 text-xs">
+        <b>PROYECTO EN CONTRUCCIÓN | </b>
+        <span>Recomendado PC - NO TE CONFIES <b className="text-indigo-600">¡REVISA! </b></span>
+        <a className="text-red-600 font-semibold" href="https://github.com/achalogy/jave-pensum">Código fuente / Reportar errores</a>
+      </p>
+      <div className="flex flex-row portrait:flex-col gap-2 h-screen px-1">
+        <div className={`flex flex-col gap-2 ${showCareerSelector ? "flex-1": ""} bg-slate-100 p-2 xl:p-4`}>
+          <div className="flex justify-between cursor-pointer" onClick={() => setShowCareerSelector(prev => !prev)}>
+            <h1 className={`font-semibold text-xl ${showCareerSelector ? "": "hidden"} portrait:flex`}>Seleccionar Carrera</h1>
+            {showCareerSelector ? <BiChevronDown size={25} /> : <BiChevronRight size={25} />}
           </div>
+          {showCareerSelector && <div className="flex flex-col gap-2">
+            {careers.map(career => {
+
+              return <div className="flex-1 flex rounded-md bg-white cursor-pointer overflow-hidden">
+                {career._id === selectedCareerId && <div className="flex px-2 bg-indigo-300 text-2xl items-center justify-center">
+                  <BiCheck color="#fff" strokeWidth={1} />
+                </div>}
+                <div className="flex-1 flex flex-col gap-2 p-4">
+                  <h3 className="font-semibold">{career.name}</h3>
+                  <p className="text-xs text-end text-slate-400">Actualizado: {new Date(career.updated).toLocaleDateString("es-CO")}</p>
+                </div>
+              </div>
+            })
+            }
+
+          </div>}
         </div>
-      </div>
-      <div className="flex flex-[4] p2 xl:p-4">
-        <DragableGrid />
+        <div className="flex flex-[4] p2 xl:p-4">
+          {selectedCareerId && <DragableGrid key={selectedCareerId} careerId={selectedCareerId} />}
+        </div>
       </div>
     </div>
   )
