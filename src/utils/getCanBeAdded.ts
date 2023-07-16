@@ -1,7 +1,7 @@
 import { ISubject } from "src/models/subjects"
 
-export default ({career, subject}: {
-  career: ISubject[][],
+export default ({ pensum, subject}: {
+  pensum: ISubject[][],
   subject: ISubject
 }) => {
 
@@ -11,7 +11,7 @@ export default ({career, subject}: {
   let ocurrencies: number[] = []
 
   const passSubjectsReq = subjectReqs?.every((x) => {
-    return career.slice(0, -1).some((y, i) => {
+    return pensum.slice(0, -1).some((y, i) => {
       ocurrencies.push(i)
       return y.map(x => x.code).includes(x)
     })
@@ -19,7 +19,7 @@ export default ({career, subject}: {
 
   const passCoreReq = coreReqs?.every((core) => {
     let total = 0;
-    career.slice(0, -1).map((semester, semesterIndex) => {
+    pensum.slice(0, -1).map((semester, semesterIndex) => {
       semester.map(subject => {
         if(subject.core == core.core_name) {
           total += subject.credits

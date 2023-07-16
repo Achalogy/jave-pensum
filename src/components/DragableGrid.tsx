@@ -2,19 +2,20 @@ import { useEffect, useRef, useState } from "react"
 import colors from "src/constants/colors"
 import { ICareer } from "src/models/career"
 import { ISubject } from "src/models/subjects"
-import { IType, TranslateType } from "src/types"
 import getCanBeAdded from "src/utils/getCanBeAdded"
+import getCreditsColor from "src/utils/getCreditsColor"
+import translateTypes from "src/utils/translateType"
 
 export default () => {
-  const dragItem: any = useRef()
-  const dragOverItem: any = useRef()
+  const dragItem = useRef()
+  const dragOverItem = useRef()
 
   const [showVault, setShowVault] = useState<boolean>(true)
   const [hideCannotBeAdded, setHideCannotBeAdded] = useState<boolean>(false)
 
   const [semesters, setSemesters] = useState(8)
 
-  const [subjects, setSubjects] = useState<any[][]>(() => {
+  const [pensum, setPensum] = useState<ISubject[][]>(() => {
     const _s = []
     for (let i = 0; i <= semesters; i++) {
       _s.push([])
@@ -24,7 +25,7 @@ export default () => {
 
   const getSubjects = async () => {
 
-    const { pensum }: ICareer = await (await fetch('/api/getCareer?career=64aeb9010820de8718449067')).json()
+    const response: ICareer = await (await fetch('/api/getCareer?career=64aeb9010820de8718449067')).json()
 
     const _subjectsData: ISubject[] = await (await fetch('/api/getSubjects', {
       method: "POST",
@@ -32,11 +33,11 @@ export default () => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        query: pensum.map(x => x.code)
+        query: response.pensum.map(x => x.code)
       })
     })).json()
 
-    let _subjects: any[] = pensum.map(sub => {
+    let _subjects: any[] = response.pensum.map(sub => {
       const i = _subjectsData.findIndex(x => x.code == sub.code)
 
       if (i > -1) {
@@ -48,11 +49,11 @@ export default () => {
       return sub
     })
 
-    let newList = subjects.slice()
+    let newList = pensum.slice()
 
-    newList[subjects.length - 1] = _subjects
+    newList[pensum.length - 1] = _subjects
 
-    setSubjects(newList)
+    setPensum(newList)
   }
 
   useEffect(() => {
@@ -67,23 +68,23 @@ export default () => {
     dragOverItem.current = position;
   };
 
-  const drop = (e: any) => {
-    e.stopPropagation()
-    let newList = subjects.slice();
+  const drop = () => {
+    if (!dragItem.current || !dragOverItem.current) return
+    let newList = pensum.slice();
 
     const dragItemContent: ISubject = newList[dragItem?.current[0]][dragItem?.current[1]]
 
-    const { canBeAdded } = getCanBeAdded({ career: newList, subject: dragItemContent })
+    const { canBeAdded } = getCanBeAdded({ pensum: newList, subject: dragItemContent })
 
     if (!canBeAdded) return
 
     newList[dragItem?.current[0]].splice(dragItem?.current[1], 1)
     newList[dragOverItem?.current[0]].splice(dragOverItem?.current[1], 0, dragItemContent)
 
-    dragItem.current = null
-    dragOverItem.current = null
+    dragItem.current = undefined
+    dragOverItem.current = undefined
 
-    setSubjects(newList.map(x => x.filter(y => y)));
+    setPensum(newList.map(x => x.filter(y => y)));
   }
 
   const DragableDiv = ({ children, index = [0, 0], className = "", id }: {
@@ -101,13 +102,14 @@ export default () => {
       dragEnd(index)
     }}
     onDragEnd={(e) => {
-      drop(e)
+      e.stopPropagation()
+      drop()
     }}
     draggable={id == "item"} className={`cursor-pointer ${className}`}> {children} </div>
 
   const SubjectComponent = ({ index, subject }: { index: number[], subject: ISubject }) => {
 
-    const { canBeAdded, reqSemester } = getCanBeAdded({ career: subjects, subject })
+    const { canBeAdded, reqSemester } = getCanBeAdded({ pensum, subject })
 
     return <>
       {hideCannotBeAdded && !canBeAdded ?
@@ -116,8 +118,7 @@ export default () => {
         <DragableDiv id="item" index={index} className={`flex items-center justify-center rounded-md text-center text-xs h-full overflow-hidden xl:max-h-[8vh] ${colors[subject.core ?? ""] ?? colors[subject.type ?? ""]} ${canBeAdded ? "saturate-100" : "saturate-0"}`}>
           {canBeAdded && <p className="bg-indigo-300 h-full text-center flex items-center px-2 font-semibold">{">"} {(reqSemester >= 0 ? reqSemester + 1 : 0)}</p>}
           <div className="flex flex-col items-center justify-center p-2 flex-1">
-            { /* @ts-expect-error */}
-            <b>{subject.name ?? TranslateType[subject.type as any]}</b>
+            <b>{subject.name ?? translateTypes[subject.type ?? ""]}</b>
             <p>{subject.code}</p>
             <p>{subject.credits}</p>
           </div>
@@ -128,19 +129,19 @@ export default () => {
 
   return <div className="flex flex-col flex-1 max-w-full max-h-[100vh]">
     <div className="flex gap-1 p-2 flex-1 overflow-x-scroll">
-      {subjects.slice(0, -1).map((grupo, grupoindex) => {
-        const credits = grupo.reduce((acc, curr) => {
+      {pensum.slice(0, -1).map((semester, semesterIndex) => {
+        const credits = semester.reduce((acc, curr) => {
           return acc + (isNaN(curr.credits) ? 0 : curr.credits)
         }, 0)
 
         return <div className="flex flex-col flex-1 gap-2">
           <p className="text-center bg-indigo-200 rounded-md font-semibold py-1">
-            Semestre {grupoindex + 1}
+            Semestre {semesterIndex + 1}
           </p>
-          <DragableDiv id="column" index={[grupoindex, grupo.length]} className={`flex flex-col flex-1 p-2 gap-2 overflow-scroll rounded-md w-[45vw] xl:w-auto ${grupoindex % 2 == 0 ? "bg-slate-200" : "bg-slate-100"}`}>
-            {grupo.map((subject, subjectIndex) => <SubjectComponent index={[grupoindex, subjectIndex]} subject={subject} />)}
+          <DragableDiv id="column" index={[semesterIndex, semester.length]} className={`flex flex-col flex-1 p-2 gap-2 overflow-scroll rounded-md w-[45vw] xl:w-auto ${semesterIndex % 2 == 0 ? "bg-slate-200" : "bg-slate-100"}`}>
+            {semester.map((subject, subjectIndex) => <SubjectComponent index={[semesterIndex, subjectIndex]} subject={subject} />)}
           </DragableDiv>
-          <p className={`text-center ${credits < 10 ? "bg-green-300" : credits < 14 ? "bg-indigo-300" : credits < 18 ? "bg-blue-300" : credits < 20 ? "bg-orange-300" : "bg-red-300"} rounded-md font-semibold py-1`}>
+          <p className={`text-center ${getCreditsColor({ credits })} rounded-md font-semibold py-1`}>
             Creditos {credits}
           </p>
         </div>
@@ -152,8 +153,8 @@ export default () => {
         <button onClick={() => setHideCannotBeAdded(prev => !prev)} className="px-2 bg-slate-200 rounded-md">{hideCannotBeAdded ? "Mostrar si no se puede añadir" : "Ocultar si no se puede añadir"}</button>
       </div>
       {showVault && <div className="flex flex-wrap p-4 gap-2 overflow-scroll">
-        {subjects.at(-1)?.map((subject, subjectIndex) =>
-          <SubjectComponent index={[subjects.length - 1, subjectIndex]} subject={subject} />
+        {pensum.at(-1)?.map((subject, subjectIndex) =>
+          <SubjectComponent index={[pensum.length - 1, subjectIndex]} subject={subject} />
         )}
       </div>}
     </div>

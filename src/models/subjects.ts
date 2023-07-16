@@ -9,6 +9,7 @@ export interface ISubject {
   credits: number,
   type?: IType,
   core?: ICore,
+  canBeAdded?: boolean,
   requirements?: {
     core?: {
       core_name: "Basics" | "Applied engineering" | "Socio-humanistic",
