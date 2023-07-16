@@ -21,14 +21,13 @@ export default () => {
   return (
     <div className="flex flex-col">
       <p className="p-2 bg-orange-100 text-xs">
-        <b>PROYECTO EN CONTRUCCIÓN | </b>
-        <span>Recomendado PC - NO TE CONFIES <b className="text-indigo-600">¡REVISA! </b></span>
+        <span><b className="text-indigo-600">¡NO FUNCIONA EN MOVIL!</b> - NO TE CONFIES, <b className="text-indigo-600">revisa tu horario! </b></span>
         <a className="text-red-600 font-semibold" href="https://github.com/achalogy/jave-pensum">Código fuente / Reportar errores</a>
       </p>
       <div className="flex flex-row portrait:flex-col gap-2 h-screen px-1">
-        <div className={`flex flex-col gap-2 ${showCareerSelector ? "flex-1": ""} bg-slate-100 p-2 xl:p-4`}>
+        <div className={`flex flex-col gap-2 ${showCareerSelector ? "flex-1" : ""} bg-slate-100 p-2 xl:p-4`}>
           <div className="flex justify-between cursor-pointer" onClick={() => setShowCareerSelector(prev => !prev)}>
-            <h1 className={`font-semibold text-xl ${showCareerSelector ? "": "hidden"} portrait:flex`}>Seleccionar Carrera</h1>
+            <h1 className={`font-semibold text-xl ${showCareerSelector ? "" : "hidden"} portrait:flex`}>Seleccionar Carrera</h1>
             {showCareerSelector ? <BiChevronDown size={25} /> : <BiChevronRight size={25} />}
           </div>
           {showCareerSelector && <div className="flex flex-col gap-2">
@@ -52,6 +51,6 @@ export default () => {
           {selectedCareerId && <DragableGrid key={selectedCareerId} careerId={selectedCareerId} />}
         </div>
       </div>
-    </div>
+    </div >
   )
 }
