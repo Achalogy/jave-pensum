@@ -13,7 +13,7 @@ export interface ISubject {
     core?: {
       core_name: "Basics" | "Applied engineering" | "Socio-humanistic",
       credits: number
-    },
+    }[],
     subjects?: number[]
   },
   corequirements?: number[]

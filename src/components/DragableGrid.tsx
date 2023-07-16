@@ -3,6 +3,7 @@ import colors from "src/constants/colors"
 import { ICareer } from "src/models/career"
 import { ISubject } from "src/models/subjects"
 import { IType, TranslateType } from "src/types"
+import getCanBeAdded from "src/utils/getCanBeAdded"
 
 export default () => {
   const dragItem: any = useRef()
@@ -71,9 +72,8 @@ export default () => {
     let newList = subjects.slice();
 
     const dragItemContent: ISubject = newList[dragItem?.current[0]][dragItem?.current[1]]
-    const requirements = dragItemContent.requirements?.subjects ?? []
 
-    const canBeAdded = requirements?.every(x => newList.slice(0, dragOverItem.current[0]).flat().map(y => y.code).includes(x))
+    const { canBeAdded } = getCanBeAdded({ career: newList, subject: dragItemContent })
 
     if (!canBeAdded) return
 
@@ -107,18 +107,7 @@ export default () => {
 
   const SubjectComponent = ({ index, subject }: { index: number[], subject: ISubject }) => {
 
-    const requirements = subject.requirements?.subjects ?? []
-
-    let ocurrencies: number[] = []
-
-    const canBeAdded = requirements?.every((x) => {
-      return subjects.slice(0, -1).some((y, i) => {
-        ocurrencies.push(i)
-        return y.map(x => x.code).includes(x)
-      })
-    })
-
-    const reqSemester = Math.max(...ocurrencies)
+    const { canBeAdded, reqSemester } = getCanBeAdded({ career: subjects, subject })
 
     return <>
       {hideCannotBeAdded && !canBeAdded ?
